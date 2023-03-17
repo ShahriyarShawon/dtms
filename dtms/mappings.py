@@ -17,7 +17,6 @@ college_code_mapping = {
 }
 
 
-#/webtms_du/courseList/ANIM;jsessionid=A998E3D0FB2D916C2FC04772A08E7B68 Animation (ANIM)
 subject_codes = {
     "ANIM": "Animation (ANIM)",
     "ARCH": "Architecture (ARCH)",
