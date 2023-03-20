@@ -7,7 +7,10 @@ def get_prereqs_for_class(db: Session, class_number: str):
     prereq_str = (
         db.query(DrexelClass).filter(DrexelClass.number == class_number.replace(" ", "")).first().prereqs
     )
-    return get_paths(prereq_str)
+    if prereq_str == "":
+        return [""]
+    else:
+        return get_paths(prereq_str)
 
 def get_postreqs_for_class(db: Session, class_number: str):
     postreq_classes = (
