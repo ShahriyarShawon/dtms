@@ -5,9 +5,15 @@ from .models import DrexelClass, DrexelTMSClass
 
 def get_prereqs_for_class(db: Session, class_number: str):
     prereq_str = (
-        db.query(DrexelClass).filter(DrexelClass.number == class_number).first().prereqs
+        db.query(DrexelClass).filter(DrexelClass.number == class_number.replace(" ", "")).first().prereqs
     )
     return get_paths(prereq_str)
+
+def get_postreqs_for_class(db: Session, class_number: str):
+    postreq_classes = (
+        db.query(DrexelClass).filter(DrexelClass.prereqs.like(f"%{class_number}%")).all()
+    )
+    return [postreq.number for postreq in postreq_classes]
 
 
 def get_classes_for_term(

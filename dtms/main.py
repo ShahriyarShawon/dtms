@@ -1,5 +1,6 @@
 from typing import Any
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from . import crud, models, schemas
@@ -9,6 +10,18 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:8000",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()
@@ -33,10 +46,13 @@ def classes_for_term(
         db, term, college, subject, credit_hours, prereq, instructor, writing_intensive
     )
 
-
 @app.get("/prereqs_for/{course_number}", response_model=list[str])
 def prereqs_possbilities_for(course_number: str, db: Session = Depends(get_db)) -> Any:
     return crud.get_prereqs_for_class(db, course_number)
+
+@app.get("/postreq/{course_number}", response_model=list[str])
+def postreq(course_number: str, db: Session = Depends(get_db)):
+    return crud.get_postreqs_for_class(db, course_number)
 
 
 # @app.get(
