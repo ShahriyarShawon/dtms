@@ -1,6 +1,7 @@
-from .database import Base
-from sqlalchemy import Boolean, Column, Float, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
+from .database import Base
 
 
 class DrexelClass(Base):

@@ -1,5 +1,6 @@
-from typing import Any
-from fastapi import Depends, FastAPI
+from typing import Any, Optional
+
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -23,12 +24,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+
+@app.get("/class/{course_number}")
+def course_number(course_number: str, db: Session = Depends(get_db)):
+    if class_found := crud.get_class(db, course_number):
+        return class_found
+    return HTTPException(status_code=404, detail=f"Course {course_number} not found, try with a space maybe?")
 
 
 @app.get("/classes/term/", response_model=list[schemas.DrexelTMS])
@@ -46,13 +55,19 @@ def classes_for_term(
         db, term, college, subject, credit_hours, prereq, instructor, writing_intensive
     )
 
+
 @app.get("/prereqs_for/{course_number}", response_model=list[str])
-def prereqs_possbilities_for(course_number: str, db: Session = Depends(get_db)) -> Any:
+def prereqs_possbilities_for(
+    course_number: str, db: Session = Depends(get_db)
+) -> Any:
     return crud.get_prereqs_for_class(db, course_number)
 
+
 @app.get("/postreq/{course_number}", response_model=list[str])
-def postreq(course_number: str, db: Session = Depends(get_db)):
-    return crud.get_postreqs_for_class(db, course_number)
+def postreq(
+    course_number: str, subject_filter: str = None, db: Session = Depends(get_db)
+):
+    return crud.get_postreqs_for_class(db, course_number, subject_filter)
 
 
 # @app.get(

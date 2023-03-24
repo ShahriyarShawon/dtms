@@ -1,14 +1,12 @@
 import sys
+
 import requests
 from bs4 import BeautifulSoup
-from dtms.mappings import (
-    col_to_courses,
-)
-
-from dtms.database import Base, engine, SessionLocal
-from dtms.models import DrexelTMSClass, DrexelClass
 from sqlalchemy.orm import Session
 
+from dtms.database import Base, SessionLocal, engine
+from dtms.mappings import col_to_courses
+from dtms.models import DrexelClass, DrexelTMSClass
 
 ROOT_URL = "https://termmasterschedule.drexel.edu/webtms_du/"
 db = SessionLocal()
@@ -75,12 +73,11 @@ class TMSScraper:
     def get_info_from_class_row(self, row) -> list[DrexelClass]:
         row = [item for item in row if item != "\n"]
         subject_code = row[0].text
-        course_number = subject_code + row[1].text
+        course_number = subject_code + " " + row[1].text
         instruction_type = row[2].text
         instruction_method = row[3].text
         section = row[4].text
         crn = row[5].text
-        #course_title = row[6].text
         days_time = (
             row[7]
             .find_all(class_="table-day-time")[0]
