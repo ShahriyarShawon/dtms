@@ -1,21 +1,32 @@
 from sqlalchemy.orm import Session
+
 from dtms.prereq_parser import get_paths
 
 from .models import DrexelClass, DrexelTMSClass
 
+
+def get_class(db: Session, class_number: str):
+    return db.query(DrexelClass).filter(DrexelClass.number == class_number).first()
+
 def get_prereqs_for_class(db: Session, class_number: str):
-    prereq_str = (
-        db.query(DrexelClass).filter(DrexelClass.number == class_number.replace(" ", "")).first().prereqs
+    prereq_query = db.query(DrexelClass).filter(
+        DrexelClass.number == class_number.replace(" ", "")
     )
+    prereq_str = prereq_query.first().prereqs 
     if prereq_str == "":
         return [""]
     else:
         return get_paths(prereq_str)
 
-def get_postreqs_for_class(db: Session, class_number: str):
-    postreq_classes = (
-        db.query(DrexelClass).filter(DrexelClass.prereqs.like(f"%{class_number}%")).all()
+
+def get_postreqs_for_class(db: Session, class_number: str, subject_filter: str = None):
+    postreq_classes = db.query(DrexelClass).filter(
+        DrexelClass.prereqs.like(f"%{class_number}%"),
     )
+    if subject_filter:
+        postreq_classes = postreq_classes.filter(
+            DrexelClass.subject == subject_filter
+        ).all()
     return [postreq.number for postreq in postreq_classes]
 
 
@@ -49,9 +60,11 @@ def get_classes_for_term(
     )
 
     if instructor:
-        tms_classes = tms_classes.filter(DrexelTMSClass.instructors.like(f"%{instructor}%"))
+        tms_classes = tms_classes.filter(
+            DrexelTMSClass.instructors.like(f"%{instructor}%")
+        )
     tms_classes = tms_classes.filter(
-        DrexelTMSClass.term == term, 
+        DrexelTMSClass.term == term,
     ).all()
     course_numbers = [course.id for course in course_catalogue.all()]
     final_result = [

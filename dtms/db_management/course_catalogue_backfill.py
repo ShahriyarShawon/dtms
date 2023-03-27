@@ -2,11 +2,12 @@ import sys
 
 import requests
 from bs4 import BeautifulSoup, ResultSet
-from dtms.database import Base, engine
-from dtms.mappings import subject_codes, courses_to_col
-from dtms.models import DrexelClass
 from sqlalchemy.orm import Session
 from yarl import URL
+
+from dtms.database import Base, engine
+from dtms.mappings import courses_to_col, subject_codes
+from dtms.models import DrexelClass
 
 url_base = URL("https://catalog.drexel.edu/coursedescriptions/quarter/undergrad/")
 
@@ -20,7 +21,7 @@ def get_class_info_in_block(result: ResultSet, subject: str) -> DrexelClass:
         writing_intensive = True
     else:
         writing_intensive = False
-    course_name = title_block_children[1].text.strip().replace("\xa0", "")
+    course_name = title_block_children[1].text.strip().replace("\xa0", " ")
     course_credits = title_block_children[2].text.strip().replace("\xa0", "")
     if "-" in course_credits:
         creds = course_credits.split("-")
@@ -54,7 +55,7 @@ def get_class_info_in_block(result: ResultSet, subject: str) -> DrexelClass:
 def get_classes_for_subject(subject: str):
     print(f"Getting classses for {subject}", file=sys.stderr)
     url = url_base / subject.lower()
-    content = requests.get(url).content #pylint: disable=missing-timeout
+    content = requests.get(url).content  # pylint: disable=missing-timeout
     soup = BeautifulSoup(content, "html.parser")
 
     course_blocks = soup.find_all(class_="courseblock")
