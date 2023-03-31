@@ -13,7 +13,7 @@ url_base = URL("https://catalog.drexel.edu/coursedescriptions/quarter/undergrad/
 def get_class_info_in_block(result: ResultSet, subject: str) -> DrexelClass:
     title_block = result.find_all(class_="courseblocktitle")[0]
     title_block_children = [child for child in title_block.find("strong").children]
-    course_number = title_block_children[0].text.strip().replace("\xa0", "")
+    course_number = title_block_children[0].text.strip().replace("\xa0", " ")
     if "[WI]" in course_number:
         course_number = course_number.replace("[WI]", "").strip()
         writing_intensive = True

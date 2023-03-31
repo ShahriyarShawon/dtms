@@ -6,13 +6,16 @@ from .models import DrexelClass, DrexelTMSClass
 
 
 def get_class(db: Session, class_number: str):
-    return db.query(DrexelClass).filter(DrexelClass.number == class_number).first()
+    return db.query(DrexelClass).filter(DrexelClass.number == class_number.upper()).first()
 
 def get_prereqs_for_class(db: Session, class_number: str):
     prereq_query = db.query(DrexelClass).filter(
-        DrexelClass.number == class_number.replace(" ", "")
+        DrexelClass.number == class_number.upper()
     )
-    prereq_str = prereq_query.first().prereqs 
+    try:
+        prereq_str = prereq_query.first().prereqs 
+    except AttributeError:
+        return [f"Prereqs not found for {class_number} try adding a space between subject and number"]
     if prereq_str == "":
         return [""]
     else:
@@ -20,6 +23,8 @@ def get_prereqs_for_class(db: Session, class_number: str):
 
 
 def get_postreqs_for_class(db: Session, class_number: str, subject_filter: str = None):
+    if " " not in class_number:
+        return [f"Try adding a space between subject and number"]
     postreq_classes = db.query(DrexelClass).filter(
         DrexelClass.prereqs.like(f"%{class_number}%"),
     )
