@@ -126,6 +126,7 @@ if __name__ == "__main__":
             print(f"Course: {course}")
             classes.extend(tms.get_classes_for_course(course))
     with Session(engine) as session:
+        session.query(DrexelTMSClass).delete()
         session.add_all(classes)
         session.commit()
         db.close()
