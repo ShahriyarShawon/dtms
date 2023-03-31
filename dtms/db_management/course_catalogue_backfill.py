@@ -7,7 +7,7 @@ from dtms.database import Base, engine
 from dtms.mappings import courses_to_col, subject_codes
 from dtms.models import DrexelClass
 
-url_base = URL("https://catalog.drexel.edu/coursedescriptions/quarter/undergrad/")
+url_base = URL("https://catalog.drexel.edu/coursedescriptions/quarter/")
 
 
 def get_class_info_in_block(result: ResultSet, subject: str) -> DrexelClass:
@@ -25,8 +25,16 @@ def get_class_info_in_block(result: ResultSet, subject: str) -> DrexelClass:
         creds = course_credits.split("-")
         min_credits = float(creds[0])
         max_credits = float(creds[1])
+    elif "," in course_credits:
+        creds = course_credits.split(",")
+        min_credits = float(creds[0])
+        max_credits = float(creds[1])
     else:
-        min_credits = max_credits = float(course_credits)
+        try:
+            min_credits = max_credits = float(course_credits)
+        except ValueError:
+            print(f"Could not get min max creds for {course_number}")
+            raise
 
     desc = result.find_all(class_="courseblockdesc")[0].text.strip().replace("\xa0", "")
     children = [child for child in result.children]
@@ -65,9 +73,10 @@ if __name__ == "__main__":
     all_classes = []
     with Session(engine) as session:
         session.query(DrexelClass).delete()
-        urls = [url_base / subject.lower() for subject in subject_codes.keys()]
+        urls = [url_base / "undergrad" / subject.lower() for subject in subject_codes.keys()]
+        urls.extend([url_base / "grad" / subject.lower() for subject in subject_codes.keys()])
         requests = (grequests.get(u) for u in urls)
-        responses = [r for r in grequests.map(requests) if r.status_code == 200]
+        responses = [r for r in grequests.map(requests) if r is not None and r.status_code == 200]
         for response in responses:
             all_classes.extend(get_classes_for_subject(response))
         session.add_all(all_classes)
