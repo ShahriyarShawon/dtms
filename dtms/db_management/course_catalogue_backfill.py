@@ -1,6 +1,4 @@
-import sys
-
-import requests
+import grequests
 from bs4 import BeautifulSoup, ResultSet
 from sqlalchemy.orm import Session
 from yarl import URL
@@ -52,10 +50,9 @@ def get_class_info_in_block(result: ResultSet, subject: str) -> DrexelClass:
     return c
 
 
-def get_classes_for_subject(subject: str):
-    print(f"Getting classses for {subject}", file=sys.stderr)
-    url = url_base / subject.lower()
-    content = requests.get(url).content  # pylint: disable=missing-timeout
+def get_classes_for_subject(response):
+    subject = response.url.split("/")[-2].upper()
+    content = response.content
     soup = BeautifulSoup(content, "html.parser")
 
     course_blocks = soup.find_all(class_="courseblock")
@@ -67,7 +64,11 @@ if __name__ == "__main__":
 
     all_classes = []
     with Session(engine) as session:
-        for subject in subject_codes.keys():
-            all_classes.extend(get_classes_for_subject(subject))
-            session.add_all(all_classes)
-            session.commit()
+        session.query(DrexelClass).delete()
+        urls = [url_base / subject.lower() for subject in subject_codes.keys()]
+        requests = (grequests.get(u) for u in urls)
+        responses = [r for r in grequests.map(requests) if r.status_code == 200]
+        for response in responses:
+            all_classes.extend(get_classes_for_subject(response))
+        session.add_all(all_classes)
+        session.commit()
