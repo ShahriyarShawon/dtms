@@ -3,6 +3,7 @@ import sys
 import requests
 from bs4 import BeautifulSoup
 from sqlalchemy.orm import Session
+import click
 
 from dtms.database import Base, SessionLocal, engine
 from dtms.mappings import col_to_courses
@@ -60,7 +61,11 @@ class TMSScraper:
         )
         soup = BeautifulSoup(content.text, "html.parser")
         table = soup.find(id="sortableTable")
-        body = table.find_all("tbody")[0]
+        try:
+            body = table.find_all("tbody")[0]
+        except AttributeError:
+            print(f"So far no classes for {course_code}")
+            return []
         rows = [row.contents for row in body.contents if row != "\n"]
         classes = [self.get_info_from_class_row(row) for row in rows]
         return classes
@@ -114,19 +119,24 @@ class TMSScraper:
         return drexel_class
 
 
-if __name__ == "__main__":
+@click.command()
+@click.option("--term", default="202235", help="Term in YYYYQQ format QQ => quarter format. eg 15 25 35 45")
+def main(term: str):
     Base.metadata.create_all(engine)
     tms = TMSScraper()
-    tms.select_term("202235")
+    tms.select_term(term)
     classes: list[DrexelTMSClass] = []
     for coll_code, courses in list(col_to_courses.items()):
-        print(f"College: {coll_code}")
+        #print(f"College: {coll_code}")
         tms.mock_term_college_selection(coll_code)
         for course in courses:
-            print(f"Course: {course}")
+            #print(f"Course: {course}")
             classes.extend(tms.get_classes_for_course(course))
     with Session(engine) as session:
-        session.query(DrexelTMSClass).delete()
+        session.query(DrexelTMSClass).filter(DrexelTMSClass.term == term).delete()
         session.add_all(classes)
         session.commit()
         db.close()
+
+if __name__ == "__main__":
+    main()
