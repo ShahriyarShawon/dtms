@@ -17,7 +17,7 @@ def get_prereqs_for_class(db: Session, class_number: str):
     except AttributeError:
         return [f"Prereqs not found for {class_number} try adding a space between subject and number"]
     if prereq_str == "":
-        return [""]
+        return ["No prereqs"]
     else:
         return get_paths(prereq_str)
 
@@ -40,6 +40,7 @@ def get_postreqs_for_class(db: Session, class_number: str, subject_filter: str =
 def get_classes_for_term(
     db: Session,
     term: str,
+    course_number: str = None,
     college: str = None,
     subject: str = None,
     credit_hours: int = None,
@@ -50,10 +51,12 @@ def get_classes_for_term(
     tms_classes = db.query(DrexelTMSClass)
     course_catalogue = db.query(DrexelClass)
 
+    if course_number:
+        course_catalogue = course_catalogue.filter(DrexelClass.number == course_number.upper())
     if college:
-        course_catalogue = course_catalogue.filter(DrexelClass.college == college)
+        course_catalogue = course_catalogue.filter(DrexelClass.college == college.upper())
     if subject:
-        course_catalogue = course_catalogue.filter(DrexelClass.subject == subject)
+        course_catalogue = course_catalogue.filter(DrexelClass.subject == subject.upper())
     if credit_hours:
         course_catalogue = course_catalogue.filter(
             DrexelClass.high_credits == credit_hours

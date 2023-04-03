@@ -46,6 +46,7 @@ def course_number(course_number: str, db: Session = Depends(get_db)):
 @app.get("/classes/term/", response_model=list[schemas.DrexelTMS])
 def classes_for_term(
     term: str,
+    course_number: str = None,
     subject: str = None,
     college: str = None,
     credit_hours: int = None,
@@ -55,11 +56,11 @@ def classes_for_term(
     db: Session = Depends(get_db),
 ):
     return crud.get_classes_for_term(
-        db, term, college, subject, credit_hours, prereq, instructor, writing_intensive
+        db, term, course_number, college, subject, credit_hours, prereq, instructor, writing_intensive
     )
 
 
-@app.get("/prereqs_for/{course_number}", response_model=list[str])
+@app.get("/prereqs/{course_number}", response_model=list[str])
 def prereqs_possbilities_for(
     course_number: str, db: Session = Depends(get_db)
 ) -> Any:
@@ -70,6 +71,6 @@ def prereqs_possbilities_for(
 def postreqs(
     course_number: str, subject_filter: str = None, db: Session = Depends(get_db)
 ):
-    return crud.get_postreqs_for_class(db, course_number, subject_filter.upper())
+    return crud.get_postreqs_for_class(db, course_number, subject_filter.upper() if subject_filter else None)
 
 
