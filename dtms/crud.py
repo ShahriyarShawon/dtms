@@ -32,7 +32,9 @@ def get_postreqs_for_class(db: Session, class_number: str, subject_filter: str =
         postreq_classes = postreq_classes.filter(
             DrexelClass.subject == subject_filter
         ).all()
-    return [postreq.number for postreq in postreq_classes]
+    else:
+        postreq_classes = postreq_classes.all()
+    return postreq_classes
 
 
 def get_classes_for_term(

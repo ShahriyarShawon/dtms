@@ -1,11 +1,11 @@
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
-from .database import SessionLocal, engine
+from dtms import crud, models, schemas
+from dtms.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -66,10 +66,10 @@ def prereqs_possbilities_for(
     return crud.get_prereqs_for_class(db, course_number)
 
 
-@app.get("/postreq/{course_number}", response_model=list[str])
-def postreq(
+@app.get("/postreqs/{course_number}", response_model=list[schemas.DrexelCourseCatalogue])
+def postreqs(
     course_number: str, subject_filter: str = None, db: Session = Depends(get_db)
 ):
-    return crud.get_postreqs_for_class(db, course_number, subject_filter)
+    return crud.get_postreqs_for_class(db, course_number, subject_filter.upper())
 
 
