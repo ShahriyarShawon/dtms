@@ -73,10 +73,16 @@ if __name__ == "__main__":
     all_classes = []
     with Session(engine) as session:
         session.query(DrexelClass).delete()
-        urls = [url_base / "undergrad" / subject.lower() for subject in subject_codes.keys()]
-        urls.extend([url_base / "grad" / subject.lower() for subject in subject_codes.keys()])
+        urls = [
+            url_base / "undergrad" / subject.lower() for subject in subject_codes.keys()
+        ]
+        urls.extend(
+            [url_base / "grad" / subject.lower() for subject in subject_codes.keys()]
+        )
         requests = (grequests.get(u) for u in urls)
-        responses = [r for r in grequests.map(requests) if r is not None and r.status_code == 200]
+        responses = [
+            r for r in grequests.map(requests) if r is not None and r.status_code == 200
+        ]
         for response in responses:
             all_classes.extend(get_classes_for_subject(response))
         session.add_all(all_classes)

@@ -132,6 +132,8 @@ class Parser:
                 parens_courses = self.get_inside_parens()
                 courses.append(parens_courses)
                 continue
+            else:
+                self.index += 1
         return courses
 
 

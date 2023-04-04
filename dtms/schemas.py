@@ -2,11 +2,13 @@ from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 
 class DrexelCourseCatalogueClassBase(BaseModel):
+    college: str
     subject: str
     number: str
     name: str
     low_credits: float
     high_credits: float
+    writing_intensive: bool
     prereqs: str
     desc: str
 
