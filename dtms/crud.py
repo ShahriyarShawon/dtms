@@ -6,16 +6,21 @@ from .models import DrexelClass, DrexelTMSClass
 
 
 def get_class(db: Session, class_number: str):
-    return db.query(DrexelClass).filter(DrexelClass.number == class_number.upper()).first()
+    return (
+        db.query(DrexelClass).filter(DrexelClass.number == class_number.upper()).first()
+    )
+
 
 def get_prereqs_for_class(db: Session, class_number: str):
     prereq_query = db.query(DrexelClass).filter(
         DrexelClass.number == class_number.upper()
     )
     try:
-        prereq_str = prereq_query.first().prereqs 
+        prereq_str = prereq_query.first().prereqs
     except AttributeError:
-        return [f"Prereqs not found for {class_number}. Either it doesn't exist or you didn't put a space between subject and number"]
+        return [
+            f"Prereqs not found for {class_number}. Either it doesn't exist or you didn't put a space between subject and number"
+        ]
     if prereq_str == "":
         return ["No prereqs"]
     else:
@@ -24,7 +29,9 @@ def get_prereqs_for_class(db: Session, class_number: str):
 
 def get_postreqs_for_class(db: Session, class_number: str, subject_filter: str = None):
     if " " not in class_number:
-        return [f"Try adding a space between subject and number or choosing a course that actually exists"]
+        return [
+            f"Try adding a space between subject and number or choosing a course that actually exists"
+        ]
     postreq_classes = db.query(DrexelClass).filter(
         DrexelClass.prereqs.like(f"%{class_number}%"),
     )
@@ -52,11 +59,17 @@ def get_classes_for_term(
     course_catalogue = db.query(DrexelClass)
 
     if course_number:
-        course_catalogue = course_catalogue.filter(DrexelClass.number == course_number.upper())
+        course_catalogue = course_catalogue.filter(
+            DrexelClass.number == course_number.upper()
+        )
     if college:
-        course_catalogue = course_catalogue.filter(DrexelClass.college == college.upper())
+        course_catalogue = course_catalogue.filter(
+            DrexelClass.college == college.upper()
+        )
     if subject:
-        course_catalogue = course_catalogue.filter(DrexelClass.subject == subject.upper())
+        course_catalogue = course_catalogue.filter(
+            DrexelClass.subject == subject.upper()
+        )
     if credit_hours:
         course_catalogue = course_catalogue.filter(
             DrexelClass.high_credits == credit_hours
