@@ -5,6 +5,10 @@ from dtms.prereq_parser import get_paths
 from .models import DrexelClass, DrexelTMSClass
 
 
+def get_class_by_course_name(db: Session, course_name: str):
+    result = db.query(DrexelClass).filter(DrexelClass.name.like(f"%{course_name}%"))
+    return result.all()
+
 def get_class(db: Session, class_number: str):
     return (
         db.query(DrexelClass).filter(DrexelClass.number == class_number.upper()).first()
