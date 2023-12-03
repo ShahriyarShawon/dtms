@@ -19,3 +19,30 @@ $ python -m venv .venv # create a virtual environment
 $ pip install -r requirements.txt # install all requirements
 $ uvicorn dtms.main:app --reload
 ```
+
+## Run as prod service 
+Create a systemd service by following this template and and replace as needed.
+
+Put this file in `/etc/systemd/system/` as `dtms.service`
+
+To auto start at boot: `sudo systemctl enable dtms.service`
+
+To start: `sudo systemctl start dtms.service`
+
+```
+[Unit]
+Description=Uvicorn Service for Your FastAPI App
+After=network.target
+
+[Service]
+User={your_username}
+Group={your_users_group}
+WorkingDirectory={/path/to/dtms/root}
+ExecStart={/path/to/dtms/root/.venv/bin/uvicorn} dtms.main:app --reload --host 0.0.0.0
+Restart=always
+SyslogIdentifier=dtms
+Environment="PATH={/path/to/dtms/root/.venv/bin/}
+
+[Install]
+WantedBy=multi-user.target
+```
