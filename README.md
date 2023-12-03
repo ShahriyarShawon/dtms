@@ -15,7 +15,7 @@ currently has 202235-45 for tms classes and has grad and undergrad course catalo
 
 ## Run locally
 ```sh
-$ poetry shell
-$ poetry install
+$ python -m venv .venv # create a virtual environment
+$ pip install -r requirements.txt # install all requirements
 $ uvicorn dtms.main:app --reload
 ```
