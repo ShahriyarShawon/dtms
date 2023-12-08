@@ -123,17 +123,14 @@ class Parser:
             if current_token.type == TokenType.course:
                 courses.append([current_token.value])
                 self.index += 1
-                continue
-            elif current_token.type == TokenType.and_:
+            elif current_token.type == TokenType.and_ or current_token.type == TokenType.or_:
+
+                courses.append([current_token.value])
                 self.index += 1
-                continue
             elif current_token.type == TokenType.lparen:
                 self.index += 1
                 parens_courses = self.get_inside_parens()
                 courses.append(parens_courses)
-                continue
-            else:
-                self.index += 1
         return courses
 
 
@@ -158,7 +155,8 @@ def get_paths(prereq_string):
     lexxed_tokens = l.lex()
     p = Parser(lexxed_tokens)
     course_choices = p.parse()
+    print(course_choices)
     items = organize(course_choices)
     items = [item[::-1] for item in items]
-    items = [" and ".join(item) for item in items]
+    items = [" ".join(item) for item in items]
     return items
