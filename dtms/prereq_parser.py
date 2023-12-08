@@ -155,7 +155,6 @@ def get_paths(prereq_string):
     lexxed_tokens = l.lex()
     p = Parser(lexxed_tokens)
     course_choices = p.parse()
-    print(course_choices)
     items = organize(course_choices)
     items = [item[::-1] for item in items]
     items = [" ".join(item) for item in items]
